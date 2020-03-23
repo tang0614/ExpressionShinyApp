@@ -74,7 +74,23 @@ filter_data <- function(tissue_input, gene_input, m, gene_col,tissue_col) {
   
   return(m)
   
+} 
+
+heatmap_input <- function(dataInput_heat,col1,col2,log_button) {
+  
+  n<- dataInput_heat%>%
+    group_by_(col1,col2)
+  
+  if(input$log_button){n<- n%>%summarize(m=median(log_yaxis_value))}
+  else if (!input$log_button){n<- n%>% summarise(m=median(yaxis_value))}
+  
+  n$m[is.na(n$m)] <- -10
+  n <- n[is.finite(n$m), ]
+
+  return(n)
+  
 }      
+
 
 
 

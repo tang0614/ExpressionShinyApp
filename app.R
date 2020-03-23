@@ -1,21 +1,16 @@
 library(dplyr)
 library(tidyr)
 library(tibble)
-library(ggplot2)
 library(shiny)
 library(shinyWidgets)
 library(shinythemes)
 library(shinycssloaders)
-library(igraph)
-library(ggraph)
 library(scales)
 library(DT)
 library(treemap)
 library(gtools)
 library(highcharter)
-library(purrr)
 library(stringr)
-library(fuzzyjoin)
 library(lexicon)
 library(visNetwork)
 library(httr)
@@ -24,7 +19,6 @@ library(lubridate)
 library(ggvis)
 library(rsconnect)
 library(plotly)
-library(d3heatmap)
 library(reshape2)
 
 if (FALSE) {
@@ -65,8 +59,6 @@ font-size: 15px;
 }"
 
 
-
-
 ## Shiny uses the function fluidPage to create a display that automatically adjusts to the dimensions of your user’s browser window. 
 # Define UI ----
 
@@ -77,32 +69,20 @@ ui <- fluidPage(
       ),
       #Setup navigation bar
       navbarPage("Autophagy Gene Expression", theme = shinytheme("spacelab"),
-                 
               #First Page
               tabPanel("Browse Tissue and Gene", fluid = TRUE, icon = icon("globe-americas"),tags$style(button_color_css),
-                       
-                      
                     # Sidebar layout with a input and output definitions
                     sidebarLayout(
-                      
-                    
                             #Input Panel
                             sidebarPanel(
                                   #Input Panel Title
                                   titlePanel("Visualize Gene Expression by Gene and Tissue"),
-                              
                                   hr(),
                                   helpText("Choose from GTEx, HPA Dataset"),
-                                  
-                                  
-                                  fluidRow(
-                                          
-                                    
+                                 fluidRow(
                                           column(8, 
-                                                
-                                                   selectInput("gene", label = "Gene Symbol", 
-                                                               choices=as.vector(unique(rna_tissue$GeneName)), selected=default_gene,multiple=TRUE
-                                                                 )
+                                                 selectInput("gene", label = "Gene Symbol", 
+                                                               choices=as.vector(unique(rna_tissue$GeneName)), selected=default_gene,multiple=TRUE)
                                                   
                                           ),
                                           br(),
@@ -115,39 +95,26 @@ ui <- fluidPage(
                                   fluidRow(
                                           column(8,
                                                  selectInput("tissue", label = "Tissue Name", 
-                                                                choices=as.vector(unique(rna_tissue$Tissue)), selected=default_tissue,multiple=TRUE
-                                                               )
-                                               
-                                                 
+                                                                choices=as.vector(unique(rna_tissue$Tissue)), selected=default_tissue,multiple=TRUE)
+         
                                          ),
-                                         
                                          br(),
                                          br(),
                                          column(4,prettyCheckbox("tissue_selectall", "Select All"))
                                   ),
-                                  
-                    
-                                 
+  
                                   br(), 
                                   br(),  
                                   hr(),
                                   br(),
                                   fluidRow(
-                                    column(10,
-                                           span(textOutput("alertOne"),style="color:red")
-                                           )
-                                  
+                                    column(10,span(textOutput("alertOne"),style="color:red"))
                                   ),  
                                   
                                   br(),
                                   fluidRow(
-                                    
-                                    column(10,
-                                           span(textOutput("alertTwo"),style="color:red")
-                                           )
+                                    column(10,span(textOutput("alertTwo"),style="color:red"))
                                   ),  
-                                  
-                                  
                                   br(),
                                   br(),
                                   tags$p(span("Large graphs (e.g., selecting lots of genes and tissues) may take a few seconds to render.", style = "color:red")),
@@ -158,7 +125,6 @@ ui <- fluidPage(
                                   project that build a comprehensive public resource to study tissue-specific 
                                   gene expression and regulation. Samples were collected from 54 non-diseased tissue sites across 
                                   nearly 1000 individuals, primarily for molecular assays including WGS, WES, and RNA-Seq.")),
-                                  
                                   tags$p(HTML("<b>HPA Description</b> : Dataset comes from the 19th release of the <a href=\"https://www.proteinatlas.org/about\">Human Protein Atlas</a>, which is a Swedish-based program initiated in 2003 with the aim to map 
                                   all the human proteins in cells, tissues and organs using integration of various omics technologies, 
                                   including antibody-based imaging, mass spectrometry-based proteomics, transcriptomics and systems biology. 
@@ -176,39 +142,27 @@ ui <- fluidPage(
                                      helpText("“To generate new violin plots plots without changing the heatmaps, click ‘Keep All Heatmaps”")
                               )
                             ),
-                            
-                           
-                            
+  
                             br(),
-                          
                             fluidRow(
-                           
-                                    column(2, 
-                                           offset = 1,
+                                    column(2, offset = 1,
                                            prettyCheckbox("logarithmicY_heat", "Log2 of Y", FALSE,
                                                           shape = "round", 
                                                           bigger=TRUE,
                                                           outline =TRUE, 
                                                           animation = "smooth")
                                     ),
-                                    column(2, offset = 4,
+                                    column(2,offset = 4,
                                            prettyCheckbox("keep_heat", "Keep All Heatmaps")
                                     )
-                                    
                             ),
                             
                             br(),
-                       
                             fluidRow(column(4,offset=4,h3('Median TPM Heatmap'))),
-                            
                             uiOutput("heatmap_ui"),
                             uiOutput("heatmap_hpa_ui"),
-                           
-                         
                             br(),
-                           
                             hr(),
-                            
                             column(12,
                                    fluidRow(
                                      column(10,offset = 1,
@@ -220,8 +174,6 @@ ui <- fluidPage(
                                    ),
                                     
                                     fluidRow(
-                                     
-                                           
                                             column(1, 
                                                    prettyCheckbox("rank", "", FALSE,
                                                                   shape = "round", 
@@ -234,7 +186,6 @@ ui <- fluidPage(
                                                                   bigger=FALSE,
                                                                   animation = "smooth"),
                                                    
-                                                   
                                             ),
                                             column(4,
                                                    prettyCheckbox("control_gene", "Median sort within genes", FALSE, 
@@ -245,28 +196,21 @@ ui <- fluidPage(
                                             
                                       
                                   ),
-                           
-                                  
-                                  
-                                
+    
                                 fluidRow(
-                                
                                           column(4, offset = 1,
                                                  prettyCheckbox("logarithmicY_box", "Log2 of Y", FALSE,
                                                                 shape = "round", 
                                                                 bigger=TRUE,
                                                                 outline =TRUE, 
                                                                 animation = "smooth")
-                                                 
                                           ),
                                           
                                           column(2, 
                                                  prettyCheckbox("keep_plot", "Keep All ViolinPlots")
                                           )
                                 ),
-                                      
-                                
-                          
+
                                 fluidRow(column(4,offset=4,h3('TPM violin Plot')))
                                 
                           ),
@@ -274,7 +218,6 @@ ui <- fluidPage(
                           br(),
                           br(),
                           br(),
-                  
                           fluidRow(
                             
                                   column(11, withSpinner(plotlyOutput("scatter"))
@@ -287,38 +230,29 @@ ui <- fluidPage(
                           br(),
                           br(),
                           br(),
-            
-                          
                           fluidRow(
                             
                                   column(11, withSpinner(plotlyOutput("scatter_hpa")))
                           )
-                         
-                           
-        
+
                       )
               )
       ),
       #Second Page
       tabPanel("Browse Cell-line and Gene", fluid = TRUE, icon = icon("globe-americas"),tags$style(button_color_css),
-               
-               
+  
                # Sidebar layout with a input and output definitions
                sidebarLayout(
-                 
-                 
+  
                  #Input Panel
                  sidebarPanel(
                    #Input Panel Title
                    titlePanel("Visualize Gene Expression by Gene and cell-line"),
-                   
                    hr(),
                    helpText("Choose from CCLE, HPA Dataset"),
-                   
-                   
+              
                    fluidRow(
-                     
-                     
+
                      column(8, 
                             
                             selectInput("gene_cellline", label = "Gene Symbol", 
@@ -330,23 +264,19 @@ ui <- fluidPage(
                      br(),
                      column(4,prettyCheckbox("gene_selectall_cellline", "Select All"))
                    ),
-                   
-                   
+  
                    br(),
                    fluidRow(
                      column(8,
                             selectInput("cellline_ccle", label = "Cell-line (CCLE)", 
                                         choices=as.vector(unique(ccle$cellline)), selected=c('A101D','A172','59M','697'),multiple=TRUE
                             )
-                            
-                            
                      ),
                      br(),
                      br(),
                      column(4,prettyCheckbox("cellline_ccle_selectall", "Select All"))
                    ),
-                   
-                     
+
                    fluidRow(
                      column(8,
                             selectInput("cellline_hpa", label = "Cell-line (HPA)", 
@@ -359,12 +289,6 @@ ui <- fluidPage(
                     br(),
                     column(4,prettyCheckbox("cellline_hpa_selectall", "Select All"))
                    ),
-                     
-                    
-                   
-                  
-    
-                 
                    br(), 
                    br(),  
                    hr(),
@@ -388,7 +312,6 @@ ui <- fluidPage(
                                               academia and industry to freely access the data for exploration of the human proteome. "))
                  ),
                  
-                 
                  #Output     
                  mainPanel(
                    
@@ -398,8 +321,7 @@ ui <- fluidPage(
                             helpText("To generate new violin plots plots without changing the heatmaps, click ‘Keep All Heatmaps”")
                      )
                    ),
-                   
-                  
+
                    br(),
                    
                    fluidRow(
@@ -488,9 +410,6 @@ ui <- fluidPage(
                    br(),
                    br(),
                    br(),
-      
-                   
-          
                  fluidRow(column(11, withSpinner(plotlyOutput("scatter_hpac")))),
       
                    
@@ -576,7 +495,6 @@ server <- function(input, output,session) {
   
  
 
- 
   #GTEx data input
   dataInput <- reactive({
     m<-rna_tissue
@@ -702,7 +620,7 @@ server <- function(input, output,session) {
   
 
   
-  #heatmap for tissue scale setup
+  #boundary for tissue
   boundary <- reactive({
         matrix_gtex<-heatmapInput()
         matrix_hpa<-heatmapInput_hpa()
@@ -718,7 +636,7 @@ server <- function(input, output,session) {
     
   })
   
- 
+  #boundary for cell-line
   boundary_cell <- reactive({
     matrix_gtex<-heatmapInput_ccle()
     matrix_hpa<-dataInput_ccle_heat()
@@ -734,23 +652,12 @@ server <- function(input, output,session) {
     
   })
   
-
-
-  
+#Heatmap Input
   heatmapInput <-reactive({
-        n<- dataInput_heat()%>%
-          group_by(Tissue,GeneName)
-      
-        if(input$logarithmicY_heat){n<- n%>%summarize(m=median(log_yaxis_value))}
-        else if (!input$logarithmicY_heat){n<- n%>% summarise(m=median(yaxis_value))}
-        
-        n$m[is.na(n$m)] <- -10
-        n <- n[is.finite(n$m), ]
-        n
+    heatmap_input(dataInput_heat(),'Tissue','GeneName',input$logarithmicY_heat)
   })
   
  
-  
   heatmapInput_hpa <-reactive({
         n<- dataInput_hpa_heat()%>%
           group_by(Tissue,GeneName)
@@ -777,19 +684,15 @@ server <- function(input, output,session) {
     
   })
   
-  
   heatmapInput_hpac <-reactive({
         n<- dataInput_hpac_heat()%>%
           group_by(cellline,GeneName)
-        
         if(input$logarithmicY_heat_celline){n<- n%>%summarize(m=median(log_yaxis_value))}
         else if (!input$logarithmicY_heat_celline){n<- n%>% summarise(m=median(yaxis_value))}
-        
         n$m[is.na(n$m)] <- -10
         n <- n[is.finite(n$m), ]
         n
-        
-    
+
   })
   
   
