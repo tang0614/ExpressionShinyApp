@@ -497,208 +497,97 @@ server <- function(input, output,session) {
 
   #GTEx data input
   dataInput <- reactive({
-    m<-rna_tissue
-    m$yaxis_value <-m$gtex_TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
+    m<-get_data(rna_tissue,'gtex_TPM')
     if(input$keep_plot){
        m<-filter_data(isolate(input$tissue),isolate(input$gene),m,'GeneName','Tissue')
     }else{
        m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
     }
-    m$cc <- interaction(m$Tissue, m$GeneName)
     m
   })
   dataInput_heat <- reactive({
-    m<-rna_tissue
-    m$yaxis_value <-m$gtex_TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
-    if(input$keep_heat){
-      m<-filter_data(isolate(input$tissue),isolate(input$gene),m,'GeneName','Tissue')
-    }else{
-      m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
-    }
-    m$cc <- interaction(m$Tissue, m$GeneName)
-    m
-  })
-  
-  #Datainput hpa
-  dataInput_hpa <-reactive({
-    m<-rna_tissue_hpa
-    m$yaxis_value <-m$hpa_TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
-    
+    m<-get_data(rna_tissue,'gtex_TPM')
     if(input$keep_plot){
       m<-filter_data(isolate(input$tissue),isolate(input$gene),m,'GeneName','Tissue')
     }else{
       m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
     }
-    m$cc <- interaction(m$Tissue, m$GeneName)
     m
-
   })
   
-  dataInput_hpa_heat <-reactive({
-    
-    m<-rna_tissue_hpa
-    m$yaxis_value <-m$hpa_TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
-    if(input$keep_heat){
+  #Datainput hpa
+  dataInput_hpa <-reactive({
+    m<-get_data(rna_tissue_hpa,'hpa_TPM')
+    if(input$keep_plot){
       m<-filter_data(isolate(input$tissue),isolate(input$gene),m,'GeneName','Tissue')
     }else{
       m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
     }
-  
-    m$cc <- interaction(m$Tissue, m$GeneName)
     m
-    
+  })
+  
+  dataInput_hpa_heat <-reactive({
+    m<-get_data(rna_tissue_hpa,'hpa_TPM')
+    if(input$keep_plot){
+      m<-filter_data(isolate(input$tissue),isolate(input$gene),m,'GeneName','Tissue')
+    }else{
+      m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
+    }
+    m
   })
   
   #Datainput ccle
   dataInput_ccle <-reactive({
-
-    m<-ccle
-    m$yaxis_value <-m$TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
+    m<-get_data(ccle,'TPM')
     if(input$keep_plot_cell){
       m<-filter_data(isolate(input$cellline_ccle),isolate(input$gene_cellline),m,'GeneName','cellline')
     }else{
       m<-filter_data(input$cellline_ccle,input$gene_cellline,m,'GeneName','cellline')
     }
-    
-    m$cc <- interaction(m$cellline, m$GeneName)
     m
   })
   
   dataInput_ccle_heat <-reactive({
-    
-    m<-ccle
-    m$yaxis_value <-m$TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
-    if(input$keep_heat_cell){
+    m<-get_data(ccle,'TPM')
+    if(input$keep_plot_cell){
       m<-filter_data(isolate(input$cellline_ccle),isolate(input$gene_cellline),m,'GeneName','cellline')
     }else{
       m<-filter_data(input$cellline_ccle,input$gene_cellline,m,'GeneName','cellline')
     }
-    
-    m$cc <- interaction(m$cellline, m$GeneName)
     m
-   
   })
   
   #Datainput hpa cellline
   dataInput_hpac <-reactive({
-    
-    m<-hpa_cellline
-    m$yaxis_value <-m$TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
-  
+    m<-get_data(hpa_cellline,'TPM')
     if(input$keep_plot_cell){
       m<-filter_data(isolate(input$cellline_hpa),isolate(input$gene_cellline),m,'GeneName','cellline')
     }else{
       m<-filter_data(input$cellline_hpa,input$gene_cellline,m,'GeneName','cellline')
     }
-    
-    m$cc <- interaction(m$cellline, m$GeneName)
     m
   })
   
   dataInput_hpac_heat <-reactive({
-    
-    m<-hpa_cellline
-    m$yaxis_value <-m$TPM
-    m$log_yaxis_value <-log2(m$yaxis_value)
-    
-    if(input$keep_heat_cell){
+    m<-get_data(hpa_cellline,'TPM')
+    if(input$keep_plot_cell){
       m<-filter_data(isolate(input$cellline_hpa),isolate(input$gene_cellline),m,'GeneName','cellline')
     }else{
       m<-filter_data(input$cellline_hpa,input$gene_cellline,m,'GeneName','cellline')
     }
-    
-    m$cc <- interaction(m$cellline, m$GeneName)
     m
   })
   
 
   
-  #boundary for tissue
-  boundary <- reactive({
-        matrix_gtex<-heatmapInput()
-        matrix_hpa<-heatmapInput_hpa()
-        
-        matrix_gtex_max<-max(matrix_gtex$m, na.rm = TRUE)
-        matrix_hpa_max<-max(matrix_hpa$m, na.rm = TRUE)
-        
-        if(matrix_gtex_max>matrix_hpa_max){
-          return(matrix_gtex_max)
-        }else{
-          return(matrix_hpa_max)
-        }
-    
-  })
-  
-  #boundary for cell-line
-  boundary_cell <- reactive({
-    matrix_gtex<-heatmapInput_ccle()
-    matrix_hpa<-dataInput_ccle_heat()
-    
-    matrix_gtex_max<-max(matrix_gtex$m, na.rm = TRUE)
-    matrix_hpa_max<-max(matrix_hpa$m, na.rm = TRUE)
-    
-    if(matrix_gtex_max>matrix_hpa_max){
-      return(matrix_gtex_max)
-    }else{
-      return(matrix_hpa_max)
-    }
-    
-  })
+   
   
 #Heatmap Input
-  heatmapInput <-reactive({
-    heatmap_input(dataInput_heat(),'Tissue','GeneName',input$logarithmicY_heat)
-  })
-  
- 
-  heatmapInput_hpa <-reactive({
-        n<- dataInput_hpa_heat()%>%
-          group_by(Tissue,GeneName)
-        
-        if(input$logarithmicY_heat){n<- n%>%summarize(m=median(log_yaxis_value))}
-        else if (!input$logarithmicY_heat){n<- n%>% summarise(m=median(yaxis_value))}
-        n$m[is.na(n$m)] <- -10
-        n <- n[is.finite(n$m), ]
-        #df <-as.data.frame.matrix(xtabs(m~., n))
-        #data.matrix(df)
-        n
-  })
-  
-  heatmapInput_ccle <-reactive({
-       n<- dataInput_ccle_heat()%>%
-        group_by(cellline,GeneName)
-    
-        if(input$logarithmicY_heat_celline){n<- n%>%summarize(m=median(log_yaxis_value))}
-        else if (!input$logarithmicY_heat_celline){n<- n%>% summarise(m=median(yaxis_value))}
-       
-       n$m[is.na(n$m)] <- -10
-       n <- n[is.finite(n$m), ]
-       n
-    
-  })
-  
-  heatmapInput_hpac <-reactive({
-        n<- dataInput_hpac_heat()%>%
-          group_by(cellline,GeneName)
-        if(input$logarithmicY_heat_celline){n<- n%>%summarize(m=median(log_yaxis_value))}
-        else if (!input$logarithmicY_heat_celline){n<- n%>% summarise(m=median(yaxis_value))}
-        n$m[is.na(n$m)] <- -10
-        n <- n[is.finite(n$m), ]
-        n
 
-  })
-  
-  
-  
-  
- 
+  heatmapInput <-reactive({heatmap_input(dataInput_heat(),'Tissue','GeneName',input$logarithmicY_heat)})
+  heatmapInput_hpa <-reactive({heatmap_input(dataInput_hpa_heat(),'Tissue','GeneName',input$logarithmicY_heat)})
+  heatmapInput_ccle <-reactive({heatmap_input(dataInput_ccle_heat(),'cellline','GeneName',input$logarithmicY_heat_celline)})
+  heatmapInput_hpac <-reactive({heatmap_input(dataInput_hpac_heat(),'cellline','GeneName',input$logarithmicY_heat_celline)})
 
   # draw heatmap
   output$heatmap_gtex  <- renderPlotly({
@@ -916,12 +805,20 @@ server <- function(input, output,session) {
   })
   
   hpac_new_data <- reactive({
-    
     dataInput<-dataInput_hpac()
     dataInput[is.na(dataInput)] = 0
     sortedData_1(dataInput)
-    
+ 
   })
+  
+  #boundary for tissue
+  boundary <- reactive({get_boundary(heatmapInput(),heatmapInput_hpa(),'m')})
+  boundary_cell <- reactive({get_boundary(heatmapInput_ccle(),dataInput_ccle_heat(),'m')})
+  boundary_scatter <- reactive({get_boundary(gtex_new_data(),hpa_new_data(),'yaxis_value')})
+  boundary_scatter_log <- reactive({get_boundary(gtex_new_data(),hpa_new_data(),'log_yaxis_value')})
+  boundary_scatter_cell <- reactive({get_boundary(ccle_new_data(),hpac_new_data(),'yaxis_value')})
+  boundary_scatter_log_cell <- reactive({get_boundary(ccle_new_data(),hpac_new_data(),'log_yaxis_value')})
+  
   
   scatter_ccle_var <- reactive({
     d<-ccle_new_data()
@@ -947,67 +844,6 @@ server <- function(input, output,session) {
   lvlsData_ccle <- reactive ({sortedData_2(ccle_new_data(), 'GeneName','cellline',input$control_gene_ccle,input$control_cellline_ccle)})
   lvlsData_hpac <- reactive ({sortedData_2(hpac_new_data(), 'GeneName','cellline',input$control_gene_ccle,input$control_cellline_ccle)})
   
-  #scatter plot boundary limit
-  boundary_scatter <- reactive({
-    
-    gtex_df<-gtex_new_data()
-    hpa_df<-hpa_new_data()
-    gtex_max<-max(gtex_df$yaxis_value)
-    hpa_max<-max(hpa_df$yaxis_value)
-    
-    if(gtex_max>hpa_max){
-      return(gtex_max)
-    }else{
-      return(hpa_max)
-    }
-    
-  })
-  boundary_scatter_log <- reactive({
-    
-    gtex_df<-gtex_new_data()
-    hpa_df<-hpa_new_data()
-    
-    log_gtex_max<-max(gtex_df$log_yaxis_value)
-    log_hpa_max<-max(hpa_df$log_yaxis_value)
-    
-    if(log_gtex_max>log_hpa_max){
-      return(log_gtex_max+2)
-    }else{
-      return(log_hpa_max+2)
-    }
-    
-  })
-  
-  boundary_scatter_cell <- reactive({
-    
-    gtex_df<-ccle_new_data()
-    hpa_df<-hpac_new_data()
-    gtex_max<-max(gtex_df$yaxis_value)
-    hpa_max<-max(hpa_df$yaxis_value)
-    
-    if(gtex_max>hpa_max){
-      return(gtex_max)
-    }else{
-      return(hpa_max)
-    }
-    
-  })
-  boundary_scatter_log_cell <- reactive({
-    
-    gtex_df<-ccle_new_data()
-    hpa_df<-hpac_new_data()
-    
-    log_gtex_max<-max(gtex_df$log_yaxis_value)
-    log_hpa_max<-max(hpa_df$log_yaxis_value)
-    
-    if(log_gtex_max>log_hpa_max){
-      return(log_gtex_max+2)
-    }else{
-      return(log_hpa_max+2)
-    }
-    
-  })
-  
   
   
   output$cellline_ui <- renderUI({
@@ -1032,8 +868,7 @@ server <- function(input, output,session) {
    
     if(length(unique(dataInput()$cc)) <= 45){
       
-    
-           p<-draw_scatter(dataInput(),input$logarithmicY_box,input$rank,lvlsData(),gtex_new_data())
+          p<-draw_scatter(dataInput(),input$logarithmicY_box,input$rank,lvlsData(),gtex_new_data())
           if(input$logarithmicY_box){
               p<-layout(p,
                         title = paste0("GTEx"), 
@@ -1089,133 +924,18 @@ server <- function(input, output,session) {
     
   })
   
-   
- 
   output$scatter_ccle <- renderPlotly({
     
-    d<-ccle_new_data()
-   
     ax = list(showticklabels = TRUE,
               tickangle = -45,title = "")
     
-    
-    if(length(unique(d$cc)) <= 80){
-    
-            if(input$logarithmicY_box_ccle){
-              
-              if(input$rank_ccle){
-                
-                p <- d %>%
-                  plot_ly(x = ~factor(cc,lvlsData_ccle()), 
-                          y = ~log_yaxis_value,
-                          height = 500,
-                          type = 'bar',
-                          scalemode = 'count',
-                          
-                          points='all', 
-                          jitter=0.01,  
-                          alpha = 0.1,
-                          pointpos=0,
-                          
-                          
-                          box = list(
-                            visible = T
-                          ),
-                          meanline = list(
-                            visible = T
-                          ),
-                          color = ~GeneName, 
-                          colors ='Set2',
-                          hoverinfo = "text",
-                          hovertext = paste("Gene :", d[,'GeneName'],
-                                            "<br>Lineage :", d[,'Site_Primary'],
-                                            "<br>Cell-line :", d[,'cellline'],
-                                            "<br>Median :", d[,'log_m'],
-                                            "<br>TPM :", d[,'log_yaxis_value'],
-                                            "<br>Sample size :", d[,'n'])
-                  ) 
-                
-                
-                
-                
-                
-                
-              }
-              
-              else{
-                
-                p <- d %>%
-                  plot_ly(x = ~cc, 
-                          y = ~log_yaxis_value,
-                          height = 500,
-                          type = 'bar',
-                          scalemode = 'count',
-                          color = ~GeneName, 
-                          colors ='Set2',
-                          hoverinfo = "text",
-                          hovertext = paste("Gene :", d[,'GeneName'],
-                                            "<br>Lineage :", d[,'Site_Primary'],
-                                            "<br>Cell-line :", d[,'cellline'],
-                                            "<br>Median :", d[,'log_m'],
-                                            "<br>TPM :", d[,'log_yaxis_value'],
-                                            "<br>Sample size :", d[,'n']))
-                
-              }
-              
-              
-            }else{
-              if(input$rank_ccle){
-                
-                p <- d %>%
-                  plot_ly(x = ~factor(cc,lvlsData_ccle()), 
-                          y = ~yaxis_value,
-                          height = 500,
-                          type = 'bar',
-                          scalemode = 'count',
-                          color = ~GeneName, 
-                          colors ='Set2',
-                          hoverinfo = "text",
-                          hovertext = paste("Gene :", d[,'GeneName'],
-                                            "<br>Lineage :", d[,'Site_Primary'],
-                                            "<br>Cell-line :", d[,'cellline'],
-                                            "<br>Median :", d[,'m'],
-                                            "<br>TPM :", d[,'yaxis_value'],
-                                            "<br>Sample size :", d[,'n']))
-                
-              }
-              
-              else{
-                p <- d %>%
-                  plot_ly(x = ~cc, 
-                          y = ~yaxis_value,
-                          height = 500,
-                          type = 'bar',
-                          scalemode = 'count',
-                       
-                     
-                          color = ~GeneName, 
-                          colors ='Set2',
-                          hoverinfo = "text",
-                          hovertext = paste("Gene :", d[,'GeneName'],
-                                            "<br>Lineage :", d[,'Site_Primary'],
-                                            "<br>Cell-line :", d[,'cellline'],
-                                            "<br>Median :", d[,'m'],
-                                            "<br>TPM :", d[,'yaxis_value'],
-                                            "<br>Sample size :", d[,'n']))
-                
-                
-                
-              }
-              
-              
-            }
-            
+    p <- draw_bar(input$logarithmicY_box_ccle,input$rank_ccle,lvlsData_ccle(),ccle_new_data(),'Site_Primary')
            
           if(input$logarithmicY_box_ccle){
                 p<-p%>%layout(p,
                               title = paste0("CCLE"), 
                               xaxis = ax,
-                              yaxis = list(title =paste0("Log2 TPM"),range = c(-5, boundary_scatter_log_cell())),
+                              yaxis = list(title =paste0("Log2 TPM"),range = c(0, boundary_scatter_log_cell())),
                               margin=mar)
           }else{
                 
@@ -1226,124 +946,20 @@ server <- function(input, output,session) {
                               margin=mar)
                 
            }
-              
-            
-    }
-    
+
   })
   
   output$scatter_hpac <- renderPlotly({
-   
-    d<-hpac_new_data()
-    
-    if(length(unique(d$cc)) <= 80){
-    ax = list(showticklabels = TRUE,
+   ax = list(showticklabels = TRUE,
               tickangle = -45,title = "")
-
-    
-    
-    if(input$logarithmicY_box_ccle){
-      
-      if(input$rank_ccle){
-        
-        p <- d %>%
-          plot_ly(x = ~factor(cc,lvlsData_hpac()), 
-                  y = ~log_yaxis_value,
-                  height = 500,
-                  type = 'bar',
-                  scalemode = 'count',
-         
-                  color = ~GeneName, 
-                  colors ='Set2',
-                  hoverinfo = "text",
-                  hovertext = paste("Gene :", d[,'GeneName'],
-                                    "<br>Organ :", d[,'Organ'],
-                                    "<br>Cell-line :", d[,'cellline'],
-                                    "<br>Median :", d[,'log_m'],
-                                    "<br>TPM :", d[,'log_yaxis_value'],
-                                    "<br>Sample size :", d[,'n'])
-          ) 
-        
-        
-        
-      }
-      
-      else{
-        
-        p <- d %>%
-          plot_ly(x = ~cc, 
-                  y = ~log_yaxis_value,
-                  height = 500,
-                  type = 'bar',
-                  scalemode = 'count',
-                 
-                  color = ~GeneName, 
-                  colors ='Set2',
-                  hoverinfo = "text",
-                  hovertext = paste("Gene :", d[,'GeneName'],
-                                    "<br>Organ :", d[,'Organ'],
-                                    "<br>Cell-line :", d[,'cellline'],
-                                    "<br>Median :", d[,'log_m'],
-                                    "<br>TPM :", d[,'log_yaxis_value'],
-                                    "<br>Sample size :", d[,'n']))
-        
-        
-      }
-      
-      
-    }else{
-      if(input$rank_ccle){
-        
-        p <- d %>%
-          plot_ly(x = ~factor(cc,lvlsData_hpac()), 
-                  y = ~yaxis_value,
-                  height = 500,
-                  type = 'bar',
-                  scalemode = 'count',
-                 
-                  color = ~GeneName, 
-                  colors ='Set2',
-                  hoverinfo = "text",
-                  hovertext = paste("Gene :", d[,'GeneName'],
-                                    "<br>Organ :", d[,'Organ'],
-                                    "<br>Cell-line :", d[,'cellline'],
-                                    "<br>Median :", d[,'m'],
-                                    "<br>TPM :", d[,'yaxis_value'],
-                                    "<br>Sample size :", d[,'n']))
-        
-        
-      }
-      
-      else{
-        p <- d %>%
-          plot_ly(x = ~cc, 
-                  y = ~yaxis_value,
-                  height = 500,
-                  type = 'bar',
-                  scalemode = 'count',
-                  
-                  color = ~GeneName, 
-                  colors ='Set2',
-                  hoverinfo = "text",
-                  hovertext = paste("Gene :", d[,'GeneName'],
-                                    "<br>Organ :", d[,'Organ'],
-                                    "<br>Cell-line :", d[,'cellline'],
-                                    "<br>Median :", d[,'m'],
-                                    "<br>TPM :", d[,'yaxis_value'],
-                                    "<br>Sample size :", d[,'n']))
-        
-      }
-      
-      
-    }
-    
    
-      
+    p <- draw_bar(input$logarithmicY_box_ccle,input$rank_ccle,lvlsData_hpac(),hpac_new_data(),'Organ')
+
       if(input$logarithmicY_box_ccle){
         p<-p%>%layout(p,
                       title = paste0("HPA"), 
                       xaxis = ax,
-                      yaxis = list(title =paste0("Log2 TPM"),range = c(-5, boundary_scatter_log_cell())),
+                      yaxis = list(title =paste0("Log2 TPM"),range = c(0, boundary_scatter_log_cell())),
                       margin=mar)
       }else{
         
@@ -1354,12 +970,6 @@ server <- function(input, output,session) {
                       margin=mar)
         
       }
-      
-  
-    
-    } 
-    
-    
   })
   
   
@@ -1454,9 +1064,6 @@ server <- function(input, output,session) {
       
     }
   })
-  
-
-  
   
 }
 

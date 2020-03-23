@@ -44,8 +44,15 @@ font-size: 15px;
 #Margin for all plots
 mar = list(b=50)
 
-filter_data <- function(tissue_input, gene_input, m, gene_col,tissue_col) {
+get_data<-function(tissue_input,TPM){
+  m<-tissue_input
+  m$yaxis_value <-m[[TPM]]
+  m$log_yaxis_value <-log2(m$yaxis_value)
+  m
   
+}
+filter_data <- function(tissue_input, gene_input, m, gene_col,tissue_col) {
+
   list_1<-m[ , c(gene_col)]
   sub_list1<- list_1 %in% gene_input
   
@@ -71,7 +78,7 @@ filter_data <- function(tissue_input, gene_input, m, gene_col,tissue_col) {
           
           m <- subset(n, sub_list3)
         }
-  
+  m$cc <- interaction(m[[tissue_col]], m[[gene_col]])
   return(m)
   
 } 
@@ -81,15 +88,15 @@ heatmap_input <- function(dataInput_heat,col1,col2,log_button) {
   n<- dataInput_heat%>%
     group_by_(col1,col2)
   
-  if(input$log_button){n<- n%>%summarize(m=median(log_yaxis_value))}
-  else if (!input$log_button){n<- n%>% summarise(m=median(yaxis_value))}
+  if(log_button){n<- n%>%summarize(m=median(log_yaxis_value))}
+  else if (!log_button){n<- n%>% summarise(m=median(yaxis_value))}
   
   n$m[is.na(n$m)] <- -10
   n <- n[is.finite(n$m), ]
-
+  
   return(n)
   
-}      
+}          
 
 
 
@@ -221,6 +228,19 @@ sortedData_2 <- function(dataInput, gene_col,tissue_col,control_gene,control_tis
 }
 
 
+get_boundary<-function(d1,d2,col){
+  matrix_gtex<-d1
+  matrix_hpa<-d2
+  
+  matrix_gtex_max<-max(matrix_gtex[[col]], na.rm = TRUE)
+  matrix_hpa_max<-max(matrix_hpa[[col]], na.rm = TRUE)
+  
+  if(matrix_gtex_max>matrix_hpa_max){
+    return(matrix_gtex_max)
+  }else{
+    return(matrix_hpa_max)
+  }
+}
 
 draw_scatter <- function(datainput,logarithmic_button,rank_button,sortedData_2,sortedData_1){
   
@@ -233,7 +253,7 @@ draw_scatter <- function(datainput,logarithmic_button,rank_button,sortedData_2,s
     if(logarithmic_button){
       
       if(rank_button){
-        
+   
         p <- sortedData_1 %>%
           plot_ly(x = ~factor(cc,sortedData_2), 
                   y = ~log_yaxis_value,
@@ -388,4 +408,106 @@ draw_scatter <- function(datainput,logarithmic_button,rank_button,sortedData_2,s
   }
   
   
+}
+
+draw_bar <- function(logarithmic_button,rank_button,sortedData_2,sortedData_1,col){
+  
+  d<-sortedData_1
+  
+  
+  if(length(unique(d$cc)) <= 80){
+    
+    if(logarithmic_button){
+      
+      if(rank_button){
+        
+        p <- d %>%
+          plot_ly(x = ~factor(cc,sortedData_2), 
+                  y = ~log_yaxis_value,
+                  height = 500,
+                  type = 'bar',
+
+                  color = ~GeneName, 
+                  colors ='Set2',
+                  hoverinfo = "text",
+                  hovertext = paste("Gene :", d[,'GeneName'],
+                                    "<br>Lineage :", d[[col]],
+                                    "<br>Cell-line :", d[,'cellline'],
+                                    "<br>Median :", d[,'log_m'],
+                                    "<br>TPM :", d[,'log_yaxis_value'],
+                                    "<br>Sample size :", d[,'n'])
+          ) 
+        
+        
+        
+        
+        
+        
+      }
+      
+      else{
+        
+        p <- d %>%
+          plot_ly(x = ~cc, 
+                  y = ~log_yaxis_value,
+                  height = 500,
+                  type = 'bar',
+                  color = ~GeneName, 
+                  colors ='Set2',
+                  hoverinfo = "text",
+                  hovertext = paste("Gene :", d[,'GeneName'],
+                                    "<br>Lineage :",  d[[col]],
+                                    "<br>Cell-line :", d[,'cellline'],
+                                    "<br>Median :", d[,'log_m'],
+                                    "<br>TPM :", d[,'log_yaxis_value'],
+                                    "<br>Sample size :", d[,'n']))
+        
+      }
+      
+      
+    }else{
+      if(rank_button){
+        
+        p <- d %>%
+          plot_ly(x = ~factor(cc,sortedData_2), 
+                  y = ~yaxis_value,
+                  height = 500,
+                  type = 'bar',
+                  color = ~GeneName, 
+                  colors ='Set2',
+                  hoverinfo = "text",
+                  hovertext = paste("Gene :", d[,'GeneName'],
+                                    "<br>Lineage :",  d[[col]],
+                                    "<br>Cell-line :", d[,'cellline'],
+                                    "<br>Median :", d[,'m'],
+                                    "<br>TPM :", d[,'yaxis_value'],
+                                    "<br>Sample size :", d[,'n']))
+        
+      }
+      
+      else{
+        p <- d %>%
+          plot_ly(x = ~cc, 
+                  y = ~yaxis_value,
+                  height = 500,
+                  type = 'bar',
+                  color = ~GeneName, 
+                  colors ='Set2',
+                  hoverinfo = "text",
+                  hovertext = paste("Gene :", d[,'GeneName'],
+                                    "<br>Lineage :", d[[col]],
+                                    "<br>Cell-line :", d[,'cellline'],
+                                    "<br>Median :", d[,'m'],
+                                    "<br>TPM :", d[,'yaxis_value'],
+                                    "<br>Sample size :", d[,'n']))
+        
+        
+        
+      }
+      
+      
+    }
+    
+  
+  }
 }
