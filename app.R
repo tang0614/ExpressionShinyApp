@@ -50,7 +50,7 @@ yaxis_vars <- c('TPM'='GETx_TPM')
 yaxis_vars_hpa <- c('TPM'='hpa_TPM')
 yaxis_vars_ccle <- c('TPM'='TPM')
 
-default_gene = c('ULK1','ATG14','ATG101','RB1CC1(FIP200)','BECN1','MCOLN1(TRPML1)','MCOLN2(TRPML2)','MCOLN3(TRPML3)')
+default_gene = c('ULK1','ATG14','ATG101')
 default_tissue = c('LUNG','SKIN')
 
 #CSS
@@ -214,7 +214,7 @@ ui <- fluidPage(
                                      column(10,offset = 1,
                                             helpText("For Violin Plot: Sum of selected gene and tissue should be lower than 45 for violin plot."),
                                             helpText("Click \"Median sort with tissue-types\" and \"Median sort within genes\" will sort all selected samples by median TPM."),
-                                            helpText("“To generate new heatmap plots without changing the violin plots, click ‘Keep All Violin Plots”")
+                                            helpText("To generate new heatmap plots without changing the violin plots, click ‘Keep All Violin Plots”")
                                             
                                      )
                                    ),
@@ -395,7 +395,7 @@ ui <- fluidPage(
                    fluidRow(
                      column(11,offset = 1,
                             helpText("For Heatmap: NaN values (missing values) are represented as empty boxes."),
-                            helpText("“To generate new violin plots plots without changing the heatmaps, click ‘Keep All Heatmaps”")
+                            helpText("To generate new violin plots plots without changing the heatmaps, click ‘Keep All Heatmaps”")
                      )
                    ),
                    
@@ -435,7 +435,7 @@ ui <- fluidPage(
                             column(10,offset = 1,
                                    helpText("For Bar Plot: Sum of selected gene and tissue should be lower than 80 for bar plot."),
                                    helpText("Click \"Median sort with celllines\" and \"Median sort within genes\" will sort all selected samples by median TPM."),
-                                   helpText("“To generate new heatmaps without changing the bar plots, click ‘Keep All Bar Plots”")
+                                   helpText("To generate new heatmaps without changing the bar plots, click ‘Keep All Bar Plots”")
                                    
                             )
                           ),
@@ -481,77 +481,21 @@ ui <- fluidPage(
                    ),
             
                    fluidRow(column(11, withSpinner(plotlyOutput("scatter_ccle")))),  
-         
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   fluidRow(
-                     column(10,offset = 1,
-                            helpText("For Bar Plot: Sum of selected gene and tissue should be lower than 80 for bar plot."),
-                            helpText("Click \"Median sort with celllines\" and \"Median sort within genes\" will sort all selected samples by median TPM."),
-                            helpText("“To generate new heatmaps without changing the bar plots, click ‘Keep All Bar Plots”")
-                            
-                     )
-                   ),
                    
-                   fluidRow(
-                     
-                     
-                     column(1, 
-                            prettyCheckbox("rank_hpac", "", FALSE,
-                                           shape = "round", 
-                                           bigger=FALSE)
-                     ),
-                     column(4,
-                            prettyCheckbox("control_cellline_hpac", "Median sort with celllines", FALSE,
-                                           shape = "curve", 
-                                           bigger=FALSE,
-                                           animation = "smooth")
-                     ),
-                     column(4,
-                            prettyCheckbox("control_gene_hpac", "Median sort within genes", FALSE, 
-                                           shape = "curve", 
-                                           bigger=FALSE,
-                                           animation = "smooth")
-                     )
-                     
-                     
-                   ),
-                   
-                   
-                   
-                   
-                   fluidRow(
-                     
-                     column(4, offset = 1,
-                            prettyCheckbox("logarithmicY_box_hpac", "Log2 of Y", FALSE,
-                                           shape = "round", 
-                                           bigger=TRUE,
-                                           outline =TRUE, 
-                                           animation = "smooth")
-                            
-                     ),
-                     column(4,
-                            prettyCheckbox("keep_plot_cell", "Keep All Bar Plots")
-                     )
-                   ),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+      
                    
           
                  fluidRow(column(11, withSpinner(plotlyOutput("scatter_hpac")))),
-                   
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br(),
-                   br()
-        
+      
                    
                  )
-               )
+        )
       )
                    
 
@@ -564,61 +508,69 @@ ui <- fluidPage(
 
 server <- function(input, output,session) {
   
-
+ 
   #select button
   observe({
+    if (input$tissue_selectall){
+      updateSelectInput(session, "tissue", selected = as.vector(unique(rna_tissue$Tissue)))
+    }else{
+      updateSelectInput(session, "tissue", selected =  default_tissue)
+      
+    }
     
-          if (input$gene_selectall){
-                  updateSelectInput(session, "gene", selected = as.vector(unique(rna_tissue$GeneName)))
-          }else{
-                  updateSelectInput(session, "gene", selected = default_gene)
-          }
+  })
+  
+  observe({
+    if (input$gene_selectall){
+      updateSelectInput(session, "gene", selected = as.vector(unique(rna_tissue$GeneName)))
+    }else{
+      updateSelectInput(session, "gene", selected =  default_gene)
+    }
     
-          if (input$tissue_selectall){
-            updateSelectInput(session, "tissue", selected = as.vector(unique(rna_tissue$Tissue)))
-          }else{
-            updateSelectInput(session, "tissue", selected = default_tissue)
-          }
+  })
+  
+  observe({
     
-          if (input$gene_selectall_cellline){
-            updateSelectInput(session, "gene_cellline", selected = as.vector(unique(ccle$GeneName)))
-          }else{
-            updateSelectInput(session, "gene_cellline", selected = default_gene)
-          }
+    if (input$gene_selectall_cellline){
+      updateSelectInput(session, "gene_cellline", selected = as.vector(unique(ccle$GeneName)))
+    }else{
+      updateSelectInput(session, "gene_cellline", selected = default_gene)
+    }
+   
     
-          if (input$cellline_ccle_selectall){
-            updateSelectInput(session, "cellline_ccle", selected = as.vector(unique(ccle$cellline)))
-          }else{
-            updateSelectInput(session, "cellline_ccle", selected = c('A101D','A172','59M','697'))
-          }
-          
+  })
+  
+  
+  observe({
+    if (input$cellline_ccle_selectall){
+      updateSelectInput(session, "cellline_ccle", selected = as.vector(unique(ccle$cellline)))
+    }else{
+      updateSelectInput(session, "cellline_ccle", selected = c('A101D','A172','59M','697'))
+    }
+  })
+  
+
+  observe({
           if (input$cellline_hpa_selectall){
             updateSelectInput(session, "cellline_hpa", selected = as.vector(unique(hpa_cellline$cellline)))
           }else{
             updateSelectInput(session, "cellline_hpa", selected = c('AF22','A-431','Daudi'))
           }
-          
-         
-    
   })
-  
-
-  
   observe({
     if(input$control_gene|input$control_tissue){
       updateCheckboxInput(session, "rank", value = TRUE)
     }
     
-
-    
-   
+  })
+  
+  
+  observe({
       if(input$control_gene_ccle|input$control_cellline_ccle){
         updateCheckboxInput(session, "rank_ccle", value = TRUE)
       }
     
-    if(input$control_gene_hpac|input$control_cellline_hpac){
-      updateCheckboxInput(session, "rank_hpac", value = TRUE)
-    }
+ 
     
 })
   
@@ -766,6 +718,21 @@ server <- function(input, output,session) {
     
   })
   
+ 
+  boundary_cell <- reactive({
+    matrix_gtex<-heatmapInput_ccle()
+    matrix_hpa<-dataInput_ccle_heat()
+    
+    matrix_gtex_max<-max(matrix_gtex$m, na.rm = TRUE)
+    matrix_hpa_max<-max(matrix_hpa$m, na.rm = TRUE)
+    
+    if(matrix_gtex_max>matrix_hpa_max){
+      return(matrix_gtex_max)
+    }else{
+      return(matrix_hpa_max)
+    }
+    
+  })
   
 
 
@@ -858,6 +825,7 @@ server <- function(input, output,session) {
                 title = paste0('GTEx'), 
                 margin=mar,xaxis = a)%>%
       colorbar(limits = c(0, boundary()))
+    
     l<-length(unique(df$Tissue))
     if(l>20){
       
@@ -950,7 +918,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('CCLE'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(0, max(df$m)))
+      colorbar(limits = c(0, boundary_cell()))
     
     l<-length(unique(df$cellline))
     if(l>20){
@@ -1000,7 +968,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('HPA'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(0, max(df$m)))
+      colorbar(limits = c(0, boundary_cell()))
     l<-length(unique(df$cellline))
     if(l>20){
       
@@ -1074,10 +1042,8 @@ server <- function(input, output,session) {
   lvlsData <- reactive ({sortedData_2(gtex_new_data(), 'GeneName','Tissue',input$control_gene,input$control_tissue)})
   lvlsData_hpa <- reactive ({sortedData_2(hpa_new_data(), 'GeneName','Tissue',input$control_gene,input$control_tissue)})
   lvlsData_ccle <- reactive ({sortedData_2(ccle_new_data(), 'GeneName','cellline',input$control_gene_ccle,input$control_cellline_ccle)})
-  lvlsData_hpac <- reactive ({sortedData_2(hpac_new_data(), 'GeneName','cellline',input$control_gene_hpac,input$control_cellline_hpac)})
-  #lvlsData_ccle_selected <- reactive ({sortedData_2(scatter_ccle_var(), 'GeneName','Lineage',input$control_gene_ccle,input$control_lineage_ccle)})
-  #lvlsData_hpac_selected <- reactive ({sortedData_2(scatter_hpa_var(), 'GeneName','Organ',input$control_organ_hpac,input$control_organ_hpac)})
- 
+  lvlsData_hpac <- reactive ({sortedData_2(hpac_new_data(), 'GeneName','cellline',input$control_gene_ccle,input$control_cellline_ccle)})
+  
   #scatter plot boundary limit
   boundary_scatter <- reactive({
     
@@ -1097,6 +1063,36 @@ server <- function(input, output,session) {
     
     gtex_df<-gtex_new_data()
     hpa_df<-hpa_new_data()
+    
+    log_gtex_max<-max(gtex_df$log_yaxis_value)
+    log_hpa_max<-max(hpa_df$log_yaxis_value)
+    
+    if(log_gtex_max>log_hpa_max){
+      return(log_gtex_max+2)
+    }else{
+      return(log_hpa_max+2)
+    }
+    
+  })
+  
+  boundary_scatter_cell <- reactive({
+    
+    gtex_df<-ccle_new_data()
+    hpa_df<-hpac_new_data()
+    gtex_max<-max(gtex_df$yaxis_value)
+    hpa_max<-max(hpa_df$yaxis_value)
+    
+    if(gtex_max>hpa_max){
+      return(gtex_max)
+    }else{
+      return(hpa_max)
+    }
+    
+  })
+  boundary_scatter_log_cell <- reactive({
+    
+    gtex_df<-ccle_new_data()
+    hpa_df<-hpac_new_data()
     
     log_gtex_max<-max(gtex_df$log_yaxis_value)
     log_hpa_max<-max(hpa_df$log_yaxis_value)
@@ -1316,14 +1312,14 @@ server <- function(input, output,session) {
                 p<-p%>%layout(p,
                               title = paste0("CCLE"), 
                               xaxis = ax,
-                              yaxis = list(title =paste0("Log2 TPM")),
+                              yaxis = list(title =paste0("Log2 TPM"),range = c(-5, boundary_scatter_log_cell())),
                               margin=mar)
           }else{
                 
              p<-p%>%layout(p,
                               title = paste0("CCLE"), 
                               xaxis = ax,
-                              yaxis = list(title =paste0("TPM")),
+                              yaxis = list(title =paste0("TPM"),range = c(0, boundary_scatter_cell())),
                               margin=mar)
                 
            }
@@ -1343,9 +1339,9 @@ server <- function(input, output,session) {
 
     
     
-    if(input$logarithmicY_box_hpac){
+    if(input$logarithmicY_box_ccle){
       
-      if(input$rank_hpac){
+      if(input$rank_ccle){
         
         p <- d %>%
           plot_ly(x = ~factor(cc,lvlsData_hpac()), 
@@ -1393,7 +1389,7 @@ server <- function(input, output,session) {
       
       
     }else{
-      if(input$rank_hpac){
+      if(input$rank_ccle){
         
         p <- d %>%
           plot_ly(x = ~factor(cc,lvlsData_hpac()), 
@@ -1440,18 +1436,18 @@ server <- function(input, output,session) {
     
    
       
-      if(input$logarithmicY_heat_celline){
+      if(input$logarithmicY_box_ccle){
         p<-p%>%layout(p,
                       title = paste0("HPA"), 
                       xaxis = ax,
-                      yaxis = list(title =paste0("Log2 TPM")),
+                      yaxis = list(title =paste0("Log2 TPM"),range = c(-5, boundary_scatter_log_cell())),
                       margin=mar)
       }else{
         
         p<-p%>%layout(p,
                       title = paste0("HPA"), 
                       xaxis = ax,
-                      yaxis = list(title =paste0("TPM")),
+                      yaxis = list(title =paste0("TPM"),range = c(0, boundary_scatter_cell())),
                       margin=mar)
         
       }
