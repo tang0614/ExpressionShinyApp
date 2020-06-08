@@ -23,7 +23,6 @@ library(lubridate)
 library(ggvis)
 library(rsconnect)
 library(plotly)
-library(d3heatmap)
 library(reshape2)
 if (FALSE) {
   library(RSQLite)
@@ -90,8 +89,8 @@ heatmap_input <- function(dataInput_heat,col1,col2,log_button) {
   
   if(log_button){n<- n%>%summarize(m=median(log_yaxis_value))}
   else if (!log_button){n<- n%>% summarise(m=median(yaxis_value))}
-  
-  n$m[is.na(n$m)] <- -10
+
+  n$m[is.na(n$m)] <- -100
   n <- n[is.finite(n$m), ]
   
   return(n)
