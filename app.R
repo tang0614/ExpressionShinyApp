@@ -605,7 +605,7 @@ server <- function(input, output,session) {
     df<-heatmapInput()
     
     df$z_hover <-df$m
-    df$z_hover[df$z_hover<0]  <- "Missing" 
+    df$z_hover[df$z_hover<=-100]  <- "Missing" 
     
     a <- list(
       showticklabels = TRUE,
@@ -627,7 +627,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('GTEx'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(0, boundary()))
+      colorbar(limits = c(-10, boundary()))
     
     l<-length(unique(df$Tissue))
     if(l>20){
@@ -659,7 +659,7 @@ server <- function(input, output,session) {
     
     df<-heatmapInput_hpa()
     df$z_hover <-df$m
-    df$z_hover[df$z_hover<0]  <- "Missing" 
+    df$z_hover[df$z_hover<=-100]  <- "Missing" 
     
     p <-plot_ly(data = df, type = "heatmap", 
                 colorscale= "Hot",
@@ -676,8 +676,9 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('HPA'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(0, boundary()))
+      colorbar(limits = c(-10, boundary()))
     l<-length(unique(df$Tissue))
+    
     if(l>20){
       
       p <- layout(p,height = 800)
@@ -707,7 +708,7 @@ server <- function(input, output,session) {
     
     df<-heatmapInput_ccle()
     df$z_hover <-df$m
-    df$z_hover[df$z_hover<0]  <- "Missing" 
+    df$z_hover[df$z_hover<=-100]  <- "Missing" 
 
     p <-plot_ly(data = df, type = "heatmap", 
                 colorscale= "Hot",
@@ -724,7 +725,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('CCLE'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(0, boundary_cell()))
+      colorbar(limits = c(-10, boundary_cell()))
     
     l<-length(unique(df$cellline))
     if(l>20){
@@ -757,7 +758,7 @@ server <- function(input, output,session) {
 
     df<-heatmapInput_hpac()
     df$z_hover <-df$m
-    df$z_hover[df$z_hover<0]  <- "Missing" 
+    df$z_hover[df$z_hover<=-100]  <- "Missing" 
     
     p <-plot_ly(data = df, type = "heatmap", 
                 colorscale= "Hot",
@@ -774,7 +775,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('HPA'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(0, boundary_cell()))
+      colorbar(limits = c(-10, boundary_cell()))
     l<-length(unique(df$cellline))
     if(l>20){
       
