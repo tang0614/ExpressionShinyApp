@@ -8,4 +8,4 @@
   
   3.  GTEx(version 8):The Genotype-Tissue Expression (GTEx) project is an ongoing effort to build a comprehensive public resource to study tissue-specific gene expression and regulation. Samples were collected from 54 non-diseased tissue sites across nearly 1000 individuals, primarily for molecular assays including WGS, WES, and RNA-Seq.
  
-* The app visualizes gene expression across tissues and cell lines from RNAseq datasets.
+* This app visualizes gene expression across tissues and cell lines from RNAseq datasets.
