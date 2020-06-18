@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 import re as re
 import numpy as np
 from tqdm import tqdm
-import json
 
 #Initialize browser
 my_parser = RegexParser() 
@@ -32,12 +31,14 @@ def main(parameter,dic):
 	
 	gene = parameter.split('/')[3].split('-')[1]
 	
-	
 	gene_dic={}
 	celline_dic={}
 	block_matches = my_parser.parse("<g class=\"bar_g\"(.*?)<br>Category",driver.page_source)
 	count=0
 	l=[]
+
+
+
 	for match in block_matches:
 		count+=1
 	
@@ -56,12 +57,14 @@ def main(parameter,dic):
 		
 	with open(f'/Users/xinyutang/Documents/HPA2/Data/HPA-V9/{gene}.json', 'w') as fp:
 		json.dump(gene_dic, fp)
+			
+
 
 
 
 if __name__== "__main__":
 
-	url = np.load('/Users/xinyutang/Documents/HPA2/crawler/autophagyurl.npy',allow_pickle=True)
+	url = np.load('/Users/xinyutang/Documents/HPA2/crawler/cellurl.npy',allow_pickle=True)
  
 	for i in tqdm(url):
 		print(i)
@@ -73,5 +76,7 @@ if __name__== "__main__":
 			print("Oops!  That was no web")
 		
 		
+
+	
 
 	
