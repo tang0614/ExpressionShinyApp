@@ -87,11 +87,23 @@ heatmap_input <- function(dataInput_heat,col1,col2,log_button) {
   n<- dataInput_heat%>%
     group_by_(col1,col2)
   
-  if(log_button){n<- n%>%summarize(m=median(log_yaxis_value))}
-  else if (!log_button){n<- n%>% summarise(m=median(yaxis_value))}
+  
+  if(log_button){
 
+    n<- n%>%summarize(m=median(log_yaxis_value))
+    }
+  else if (!log_button){
+  
+
+    n<- n%>% summarise(m=median(yaxis_value))
+  }
+  
   n$m[is.na(n$m)] <- -100
   n <- n[is.finite(n$m), ]
+
+  
+
+  
   
   return(n)
   
@@ -238,6 +250,24 @@ get_boundary<-function(d1,d2,col){
     return(matrix_gtex_max)
   }else{
     return(matrix_hpa_max)
+  }
+}
+
+get_boundary_min<-function(d1,d2,col){
+  matrix_gtex<-d1
+  matrix_hpa<-d2
+  
+  matrix_gtex<-matrix_gtex %>% filter(!!as.symbol(col) > -100)
+  
+  matrix_hpa<-matrix_hpa %>% filter(!!as.symbol(col) > -100)
+  
+  matrix_gtex_min<-min(matrix_gtex[[col]], na.rm = TRUE)
+  matrix_hpa_min<-min(matrix_hpa[[col]], na.rm = TRUE)
+  
+  if(matrix_gtex_min>matrix_hpa_min){
+    return(matrix_hpa_min)
+  }else{
+    return(matrix_gtex_min)
   }
 }
 

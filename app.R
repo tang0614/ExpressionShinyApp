@@ -45,8 +45,8 @@ yaxis_vars <- c('TPM'='TPM')
 yaxis_vars_hpa <- c('TPM'='hpa_TPM')
 yaxis_vars_ccle <- c('TPM'='TPM')
 
-default_gene = c('ULK1','ATG14','ATG101')
-default_tissue = c('LUNG','SKIN')
+default_gene = c('RB1CC1(FIP200)','MCOLN1(TRPML1)','MCOLN2(TRPML2)','MCOLN3(TRPML3)','SQSTM1(p62)')
+default_tissue = c('STOMACH','LIVER','OVARY','HEART MUSCLE','LUNG')
 
 #CSS
 button_color_css <- "
@@ -367,7 +367,7 @@ ui <- fluidPage(
                           fluidRow(
                             column(10,offset = 1,
                                    helpText("For Bar Plot: Sum of selected gene and tissue should be lower than 45 for bar plot."),
-                                   helpText("Click \"Median sort with celllines\" and \"Median sort within genes\" will sort all selected samples by median TPM."),
+                                   helpText("Click \"Sort with celllines\" and \"Sort within genes\" will sort all selected samples by TPM."),
                                    helpText("To generate new heatmaps without changing the bar plots, click ‘Keep All Bar Plots”")
                                    
                             )
@@ -382,13 +382,13 @@ ui <- fluidPage(
                                                   bigger=FALSE)
                             ),
                             column(4,
-                                   prettyCheckbox("control_cellline_ccle", "Median sort with celllines", FALSE,
+                                   prettyCheckbox("control_cellline_ccle", "Sort with celllines", FALSE,
                                                   shape = "curve", 
                                                   bigger=FALSE,
                                                   animation = "smooth")
                             ),
                             column(4,
-                                   prettyCheckbox("control_gene_ccle", "Median sort within genes", FALSE, 
+                                   prettyCheckbox("control_gene_ccle", "Sort within genes", FALSE, 
                                                   shape = "curve", 
                                                   bigger=FALSE,
                                                   animation = "smooth")
@@ -518,22 +518,29 @@ server <- function(input, output,session) {
   })
   dataInput_heat <- reactive({
     m<-get_data(rna_tissue,'gtex_TPM')
+
     if(input$keep_heat){
       m<-filter_data(isolate(input$tissue),isolate(input$gene),m,'GeneName','Tissue')
     }else{
       m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
     }
+    
+
+    
+    
     m
   })
   
   #Datainput hpa
   dataInput_hpa <-reactive({
     m<-get_data(rna_tissue_hpa,'hpa_TPM')
+    
     if(input$keep_plot){
       m<-filter_data(isolate(input$tissue),isolate(input$gene),m,'GeneName','Tissue')
     }else{
       m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
-    }
+    }   
+    
     m
   })
   
@@ -544,6 +551,7 @@ server <- function(input, output,session) {
     }else{
       m<-filter_data(input$tissue,input$gene,m,'GeneName','Tissue')
     }
+
     m
   })
   
@@ -596,7 +604,7 @@ server <- function(input, output,session) {
 #Heatmap Input
 
   heatmapInput <-reactive({heatmap_input(dataInput_heat(),'Tissue','GeneName',input$logarithmicY_heat)})
-  heatmapInput_hpa <-reactive({heatmap_input(dataInput_hpa_heat(),'Tissue','GeneName',input$logarithmicY_heat)})
+  heatmapInput_hpa <-reactive({ heatmap_input(dataInput_hpa_heat(),'Tissue','GeneName',input$logarithmicY_heat)})
   heatmapInput_ccle <-reactive({heatmap_input(dataInput_ccle_heat(),'cellline','GeneName',input$logarithmicY_heat_celline)})
   heatmapInput_hpac <-reactive({heatmap_input(dataInput_hpac_heat(),'cellline','GeneName',input$logarithmicY_heat_celline)})
 
@@ -606,6 +614,8 @@ server <- function(input, output,session) {
     
     df$z_hover <-df$m
     df$z_hover[df$z_hover<=-100]  <- "Missing" 
+    
+
     
     a <- list(
       showticklabels = TRUE,
@@ -627,7 +637,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('GTEx'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(-10, boundary()))
+      colorbar(limits = c(boundary_min(), boundary()))
     
     l<-length(unique(df$Tissue))
     if(l>20){
@@ -658,8 +668,12 @@ server <- function(input, output,session) {
    
     
     df<-heatmapInput_hpa()
+    
+  
+    
     df$z_hover <-df$m
     df$z_hover[df$z_hover<=-100]  <- "Missing" 
+
     
     p <-plot_ly(data = df, type = "heatmap", 
                 colorscale= "Hot",
@@ -676,7 +690,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('HPA'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(-10, boundary()))
+      colorbar(limits = c(boundary_min(), boundary()))
     l<-length(unique(df$Tissue))
     
     if(l>20){
@@ -709,6 +723,8 @@ server <- function(input, output,session) {
     df<-heatmapInput_ccle()
     df$z_hover <-df$m
     df$z_hover[df$z_hover<=-100]  <- "Missing" 
+   
+
 
     p <-plot_ly(data = df, type = "heatmap", 
                 colorscale= "Hot",
@@ -725,7 +741,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('CCLE'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(-10, boundary_cell()))
+      colorbar(limits = c(boundary_cell_min(), boundary_cell()))
     
     l<-length(unique(df$cellline))
     if(l>20){
@@ -759,6 +775,8 @@ server <- function(input, output,session) {
     df<-heatmapInput_hpac()
     df$z_hover <-df$m
     df$z_hover[df$z_hover<=-100]  <- "Missing" 
+  
+
     
     p <-plot_ly(data = df, type = "heatmap", 
                 colorscale= "Hot",
@@ -775,7 +793,7 @@ server <- function(input, output,session) {
     p <- layout(p,
                 title = paste0('HPA'), 
                 margin=mar,xaxis = a)%>%
-      colorbar(limits = c(-10, boundary_cell()))
+      colorbar(limits = c(boundary_cell_min(), boundary_cell()))
     l<-length(unique(df$cellline))
     if(l>20){
       
@@ -830,7 +848,12 @@ server <- function(input, output,session) {
   
   #boundary for tissue
   boundary <- reactive({get_boundary(heatmapInput(),heatmapInput_hpa(),'m')})
-  boundary_cell <- reactive({get_boundary(heatmapInput_ccle(),dataInput_ccle_heat(),'m')})
+  boundary_min<-reactive({get_boundary_min(heatmapInput(),heatmapInput_hpa(),'m')})
+  
+  boundary_cell <- reactive({get_boundary(heatmapInput_ccle(),heatmapInput_hpac(),'m')})
+  boundary_cell_min <- reactive({get_boundary_min(heatmapInput_ccle(),heatmapInput_hpac(),'m')})
+  
+  
   boundary_scatter <- reactive({get_boundary(gtex_new_data(),hpa_new_data(),'yaxis_value')})
   boundary_scatter_log <- reactive({get_boundary(gtex_new_data(),hpa_new_data(),'log_yaxis_value')})
   boundary_scatter_cell <- reactive({get_boundary(ccle_new_data(),hpac_new_data(),'yaxis_value')})
